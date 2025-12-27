@@ -90,31 +90,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Contact form handling
-document.getElementById('contactForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Get form data
-    const formData = new FormData(this);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const subject = formData.get('subject');
-    const message = formData.get('message');
-    
-    // Simple validation
-    if (!name || !email || !subject || !message) {
-        showNotification('Please fill in all fields', 'error');
-        return;
-    }
-    
-    if (!isValidEmail(email)) {
-        showNotification('Please enter a valid email address', 'error');
-        return;
-    }
-    
-    // Simulate form submission (replace with actual form handler)
-    showNotification('Thank you for your message! I\'ll get back to you soon.', 'success');
-    this.reset();
+// Contact form handling (validated + EmailJS submit)
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('contactForm');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const name = formData.get('name')?.trim();
+        const email = formData.get('email')?.trim();
+        const subject = formData.get('subject')?.trim();
+        const message = formData.get('message')?.trim();
+
+        if (!name || !email || !subject || !message) {
+            showNotification('Please fill in all fields', 'error');
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            showNotification('Please enter a valid email address', 'error');
+            return;
+        }
+        const templateParams = {
+            name,          // matches {{name}}
+            email,         // matches {{email}}
+            subject,       // matches {{subject}}
+            message,       // matches {{message}}
+            from_name: name,
+            from_email: email,
+            reply_to: email
+        };
+
+        emailjs
+            .send('service_ec5x70n', 'template_co2keuo', templateParams)
+            .then(() => {
+                showNotification('Message sent successfully!', 'success');
+                this.reset();
+            })
+            .catch((error) => {
+                showNotification('Failed to send message.', 'error');
+                console.error('EmailJS Error:', error);
+            });
+    });
 });
 
 // Email validation helper
@@ -408,3 +427,9 @@ function initThemeToggle() {
         themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+        emailjs.init('ss-ZML_Lxjb5KGfWz');
+});
+
+
